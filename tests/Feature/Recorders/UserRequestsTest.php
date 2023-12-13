@@ -24,7 +24,7 @@ it('captures authenticated requests', function () {
     expect($entries[0])->toHaveProperties([
         'timestamp' => now()->timestamp,
         'type' => 'user_request',
-        'key' => '567',
+        'key' => '[567,"web"]',
         'value' => null,
     ]);
     $aggregates = Pulse::ignore(fn () => DB::table('pulse_aggregates')->orderBy('period')->get());
@@ -32,7 +32,7 @@ it('captures authenticated requests', function () {
     expect($aggregates)->toContainAggregateForAllPeriods(
         type: 'user_request',
         aggregate: 'count',
-        key: '567',
+        key: '[567,"web"]',
         value: 1,
     );
 });
@@ -53,7 +53,7 @@ it('captures the authenticated user if they login during the request', function 
 
     $entries = Pulse::ignore(fn () => DB::table('pulse_entries')->get());
     expect($entries)->toHaveCount(1);
-    expect($entries[0]->key)->toBe('567');
+    expect($entries[0]->key)->toBe('[567,"web"]');
 });
 
 it('captures the authenticated user if they logout during the request', function () {
@@ -63,7 +63,7 @@ it('captures the authenticated user if they logout during the request', function
 
     $entries = Pulse::ignore(fn () => DB::table('pulse_entries')->get());
     expect($entries)->toHaveCount(1);
-    expect($entries[0]->key)->toBe('567');
+    expect($entries[0]->key)->toBe('[567,"web"]');
 });
 
 it('does not trigger an infinite loop when retrieving the authenticated user from the database', function () {

@@ -114,7 +114,7 @@ class PulseServiceProvider extends ServiceProvider
                 $event->listen(function (Logout $event) use ($app) {
                     $pulse = $app->make(Pulse::class);
 
-                    $pulse->rescue(fn () => $pulse->rememberUser($event->user));
+                    $pulse->rescue(fn () => $pulse->rememberUser($event->user, $event->guard));
                 });
 
                 $event->listen([

@@ -71,10 +71,10 @@ class SlowRequests
             timestamp: $startedAt,
         )->max()->count();
 
-        if ($userId = $this->pulse->resolveAuthenticatedUserId()) {
+        if ($user = $this->pulse->resolveAuthenticatedUser()) {
             $this->pulse->record(
                 type: 'slow_user_request',
-                key: (string) $userId,
+                key: json_encode($user, flags: JSON_THROW_ON_ERROR),
                 timestamp: $startedAt,
             )->count();
         }

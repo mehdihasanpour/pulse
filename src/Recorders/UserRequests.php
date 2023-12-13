@@ -50,7 +50,7 @@ class UserRequests
     public function record(Carbon $startedAt, Request $request, Response $response): void
     {
         if (
-            ($userId = $this->pulse->resolveAuthenticatedUserId()) === null ||
+            ($user = $this->pulse->resolveAuthenticatedUser()) === null ||
             ! $request->route() instanceof Route ||
             ! $this->shouldSample()
         ) {
@@ -63,7 +63,7 @@ class UserRequests
 
         $this->pulse->record(
             type: 'user_request',
-            key: (string) $userId,
+            key: json_encode($user, flags: JSON_THROW_ON_ERROR),
             timestamp: $startedAt->getTimestamp()
         )->count();
     }

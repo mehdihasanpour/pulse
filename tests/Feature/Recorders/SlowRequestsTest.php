@@ -113,8 +113,8 @@ it('captures slow requests per user', function () {
     expect($entries)->toHaveCount(1);
     expect($entries[0]->timestamp)->toBe(946782245);
     expect($entries[0]->type)->toBe('slow_user_request');
-    expect($entries[0]->key)->toBe('4321');
-    expect($entries[0]->key_hash)->toBe(keyHash('4321'));
+    expect($entries[0]->key)->toBe('[4321,"web"]');
+    expect($entries[0]->key_hash)->toBe(keyHash('[4321,"web"]'));
     expect($entries[0]->value)->toBeNull();
 
     $aggregates = Pulse::ignore(fn () => DB::table('pulse_aggregates')->where('type', 'slow_user_request')->orderBy('period')->orderBy('aggregate')->get());
@@ -124,31 +124,31 @@ it('captures slow requests per user', function () {
     expect($aggregates[0]->period)->toBe(60);
     expect($aggregates[0]->type)->toBe('slow_user_request');
     expect($aggregates[0]->aggregate)->toBe('count');
-    expect($aggregates[0]->key)->toBe('4321');
-    expect($aggregates[0]->key_hash)->toBe(keyHash('4321'));
+    expect($aggregates[0]->key)->toBe('[4321,"web"]');
+    expect($aggregates[0]->key_hash)->toBe(keyHash('[4321,"web"]'));
     expect($aggregates[0]->value)->toBe('1.00');
 
     expect($aggregates[1]->bucket)->toBe(946782000);
     expect($aggregates[1]->period)->toBe(360);
     expect($aggregates[1]->type)->toBe('slow_user_request');
     expect($aggregates[1]->aggregate)->toBe('count');
-    expect($aggregates[1]->key)->toBe('4321');
-    expect($aggregates[1]->key_hash)->toBe(keyHash('4321'));
+    expect($aggregates[1]->key)->toBe('[4321,"web"]');
+    expect($aggregates[1]->key_hash)->toBe(keyHash('[4321,"web"]'));
     expect($aggregates[1]->value)->toBe('1.00');
 
     expect($aggregates[2]->bucket)->toBe(946781280);
     expect($aggregates[2]->period)->toBe(1440);
     expect($aggregates[2]->type)->toBe('slow_user_request');
     expect($aggregates[2]->aggregate)->toBe('count');
-    expect($aggregates[2]->key)->toBe('4321');
-    expect($aggregates[2]->key_hash)->toBe(keyHash('4321'));
+    expect($aggregates[2]->key)->toBe('[4321,"web"]');
+    expect($aggregates[2]->key_hash)->toBe(keyHash('[4321,"web"]'));
     expect($aggregates[2]->value)->toBe('1.00');
 
     expect($aggregates[3]->period)->toBe(10080);
     expect($aggregates[3]->type)->toBe('slow_user_request');
     expect($aggregates[3]->aggregate)->toBe('count');
-    expect($aggregates[3]->key)->toBe('4321');
-    expect($aggregates[3]->key_hash)->toBe(keyHash('4321'));
+    expect($aggregates[3]->key)->toBe('[4321,"web"]');
+    expect($aggregates[3]->key_hash)->toBe(keyHash('[4321,"web"]'));
     expect($aggregates[3]->value)->toBe('1.00');
 
     Pulse::ignore(fn () => expect(DB::table('pulse_values')->count())->toBe(0));

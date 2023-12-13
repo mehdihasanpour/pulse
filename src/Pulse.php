@@ -69,16 +69,18 @@ class Pulse
     protected $usersResolver = null;
 
     /**
-     * The authenticated user ID resolver.
+     * The authenticated user resolver.
      *
-     * @var callable(): (int|string|null)
+     * @var callable(): (array{0: int|string, 1: string}|null)
      */
-    protected $authenticatedUserIdResolver = null;
+    protected $authenticatedUserResolver = null;
 
     /**
-     * The remembered user's ID.
+     * The remembered user.
+     *
+     * @var array{0: int|string, 1: string}|null
      */
-    protected int|string|null $rememberedUserId = null;
+    protected null|array $rememberedUser = null;
 
     /**
      * Indicates if Pulse routes will be registered.
@@ -268,7 +270,7 @@ class Pulse
 
         $this->lazy = collect([]);
 
-        $this->rememberedUserId = null;
+        $this->rememberedUser = null;
 
         return $this;
     }
@@ -381,39 +383,45 @@ class Pulse
     /**
      * Get the authenticated user ID resolver.
      *
-     * @return callable(): (int|string|null)
+     * @return callable(): (array{0: int|string, 1: string}|null)
      */
-    public function authenticatedUserIdResolver(): callable
+    public function authenticatedUserResolver(): callable
     {
-        if ($this->authenticatedUserIdResolver !== null) {
-            return $this->authenticatedUserIdResolver;
+        if ($this->authenticatedUserResolver !== null) {
+            return $this->authenticatedUserResolver;
         }
 
         $auth = $this->app->make('auth');
 
-        if ($auth->hasUser()) {
-            $id = $auth->id();
+        if ($auth->hasResolvedGuards() && $auth->hasUser() && ($id = $auth->id()) !== null) {
+            $driver = $auth->getDefaultDriver();
 
-            return fn () => $id;
+            return fn () => [$id, $driver];
         }
 
-        return fn () => $auth->id() ?? $this->rememberedUserId;
+        return fn () => $auth->hasResolvedGuards() && $auth->hasUser() && ($id = $auth->id()) !== null
+            ? [$id, $auth->getDefaultDriver()]
+            : $this->rememberedUser;
     }
 
     /**
-     * Resolve the authenticated user id.
+     * Resolve the authenticated user.
+     *
+     * @return array{0: int|string, 1: string}|null
      */
-    public function resolveAuthenticatedUserId(): string|int|null
+    public function resolveAuthenticatedUser(): array|null
     {
-        return $this->authenticatedUserIdResolver()();
+        return $this->authenticatedUserResolver()();
     }
 
     /**
-     * Resolve the authenticated user ID with the given callback.
+     * Resolve the authenticated user with the given callback.
+     *
+     * @param callable(): (array{0: int|string, 1: string}|null)  $callback
      */
-    public function resolveAuthenticatedUserIdUsing(callable $callback): self
+    public function resolveAuthenticatedUserUsing(callable $callback): self
     {
-        $this->authenticatedUserIdResolver = $callback;
+        $this->authenticatedUserResolver = $callback;
 
         return $this;
     }
@@ -426,29 +434,31 @@ class Pulse
      * @param  (callable(): TReturn)  $callback
      * @return TReturn
      */
-    public function withUser(Authenticatable|int|string|null $user, callable $callback): mixed
+    public function withUser(Authenticatable|int|string|null $user, string $guard, callable $callback): mixed
     {
-        $cachedUserIdResolver = $this->authenticatedUserIdResolver;
+        $cachedUserResolver = $this->authenticatedUserResolver;
 
         try {
             $id = $user instanceof Authenticatable
                 ? $user->getAuthIdentifier()
                 : $user;
 
-            $this->authenticatedUserIdResolver = fn () => $id;
+            $this->authenticatedUserResolver = fn () => $id !== null
+                ? [$id, $guard]
+                : null;
 
             return $callback();
         } finally {
-            $this->authenticatedUserIdResolver = $cachedUserIdResolver;
+            $this->authenticatedUserResolver = $cachedUserResolver;
         }
     }
 
     /**
      * Remember the authenticated user's ID.
      */
-    public function rememberUser(Authenticatable $user): self
+    public function rememberUser(Authenticatable $user, string $guard): self
     {
-        $this->rememberedUserId = $user->getAuthIdentifier();
+        $this->rememberedUser = [$user->getAuthIdentifier(), $guard];
 
         return $this;
     }
