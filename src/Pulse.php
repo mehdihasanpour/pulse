@@ -80,7 +80,7 @@ class Pulse
      *
      * @var array{0: int|string, 1: string}|null
      */
-    protected null|array $rememberedUser = null;
+    protected ?array $rememberedUser = null;
 
     /**
      * Indicates if Pulse routes will be registered.
@@ -409,7 +409,7 @@ class Pulse
      *
      * @return array{0: int|string, 1: string}|null
      */
-    public function resolveAuthenticatedUser(): array|null
+    public function resolveAuthenticatedUser(): ?array
     {
         return $this->authenticatedUserResolver()();
     }
@@ -417,7 +417,7 @@ class Pulse
     /**
      * Resolve the authenticated user with the given callback.
      *
-     * @param callable(): (array{0: int|string, 1: string}|null)  $callback
+     * @param  callable(): (array{0: int|string, 1: string}|null)  $callback
      */
     public function resolveAuthenticatedUserUsing(callable $callback): self
     {
