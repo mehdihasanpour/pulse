@@ -47,13 +47,13 @@ class WorkCommand extends Command
                 return self::SUCCESS;
             }
 
-            $pulse->digest();
-
             if ($now->subMinutes(10)->greaterThan($lastTrimmedStorageAt)) {
                 $pulse->trim();
 
                 $lastTrimmedStorageAt = $now;
             }
+
+            $pulse->digest();
 
             if ($this->option('stop-when-empty')) {
                 return self::SUCCESS;
